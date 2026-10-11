@@ -13,6 +13,8 @@ h1,h2{font-family:Inter,sans-serif;letter-spacing:0;font-weight:800}
 /* hero like bingr.one */
 .hero{position:relative;min-height:72vh;display:flex;align-items:flex-end;overflow:hidden;background:#000}
 .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center 20%;transition:background-image .4s}
+.hero-trailer{position:absolute;inset:0;overflow:hidden}
+.hero-trailer iframe{position:absolute;top:50%;left:50%;width:120vw;height:68vw;min-height:120%;min-width:178vh;transform:translate(-50%,-50%);border:0;pointer-events:none}
 .hero-fade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,16,20,.95) 0%,rgba(15,16,20,.55) 45%,transparent 75%),linear-gradient(0deg,var(--bg) 2%,transparent 45%)}
 .hero-body{position:relative;padding:60px 4vw;max-width:700px;z-index:2}
 .kicker{color:#ffd166;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase}

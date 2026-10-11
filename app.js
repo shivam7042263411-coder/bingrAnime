@@ -17,7 +17,7 @@ const LIST = `query ($page:Int,$perPage:Int,$sort:[MediaSort]) {
   Page(page:$page, perPage:$perPage) {
     media(type:ANIME, sort:$sort, isAdult:false) {
       id title{romaji english} coverImage{large} bannerImage
-      averageScore seasonYear episodes format genres description(asHtml:false) siteUrl
+      averageScore seasonYear episodes format status genres description(asHtml:false) siteUrl trailer{id site}
     }
   }
 }`;
@@ -31,7 +31,13 @@ function showHero(i) {
   $("hero-bg").style.backgroundImage = `url('${m.bannerImage || m.coverImage.large}')`;
   $("hero-kicker").textContent = `#${heroIdx + 1} Spotlight • ★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}`;
   $("hero-title").textContent = title;
-  $("hero-meta").innerHTML = `<span class="score">★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}</span><span><b>${m.seasonYear || ""}</b></span><span>${m.episodes ? m.episodes + " EP" : ""}</span><span>${esc(m.format || "")}</span>`;
+  $("hero-meta").innerHTML = `<span class="score">★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}</span><span><b>${m.seasonYear || ""}</b></span><span>${m.episodes ? m.episodes + " EP" : ""}</span><span>${esc(m.format || "")}</span><span>${esc(m.status || "")}</span>`;
+  // Nuvio-style muted hero trailer autoplay, backdrop fallback
+  const ht = $("hero-trailer");
+  if (m.trailer && m.trailer.site === "youtube" && m.trailer.id) {
+    ht.classList.remove("hidden");
+    ht.innerHTML = `<iframe src="https://www.youtube.com/embed/${m.trailer.id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${m.trailer.id}&playsinline=1&rel=0" allow="autoplay; encrypted-media" title=""></iframe>`;
+  } else { ht.classList.add("hidden"); ht.innerHTML = ""; }
   $("hero-tags").innerHTML = (m.genres || []).slice(0, 4).map((g) => `<span>${esc(g)}</span>`).join("");
   $("hero-desc").textContent = strip(m.description).slice(0, 240) + "…";
   $("hero-anilist").href = m.siteUrl;
@@ -133,7 +139,9 @@ async function openDetail(id) {
   const q = `query ($id:Int){ Media(id:$id, type:ANIME){
     title{romaji english} coverImage{large} bannerImage averageScore seasonYear
     episodes format status genres description(asHtml:false) siteUrl
-    trailer{id site} externalLinks{site url} studios{nodes{name}} } }`;
+    trailer{id site} externalLinks{site url} studios{nodes{name}}
+    recommendations(page:1, perPage:8, sort:[RATING_DESC]){ nodes{ mediaRecommendation{
+      id title{romaji english} coverImage{large} averageScore seasonYear } } } } }`;
   try {
     const r = await gql(q, { id });
     const m = r.Media;
@@ -151,6 +159,15 @@ async function openDetail(id) {
       `<a href="#" id="mylist-toggle">${isListed(id) ? "✓ In My List" : "+ My List"}</a>`;
     const tgl = $("mylist-toggle");
     if (tgl) tgl.onclick = (e) => { e.preventDefault(); toggleList({ id, title, cover: m.coverImage.large, score: m.averageScore, year: m.seasonYear }); tgl.textContent = isListed(id) ? "✓ In My List" : "+ My List"; renderLists(); };
+    const recs = (m.recommendations?.nodes || []).map((n) => n.mediaRecommendation).filter(Boolean);
+    if (recs.length) {
+      $("detail-links").insertAdjacentHTML("afterend",
+        `<h3 style="margin:18px 0 8px">More Like This</h3><div class="shelf" id="detail-recs">` +
+        recs.map((r) => `<div class="card" data-id="${r.id}"><img loading="lazy" src="${r.coverImage.large}" alt="" />` +
+          `<div class="t">${esc(r.title.english || r.title.romaji)}</div>` +
+          `<div class="s">★ ${r.averageScore ? (r.averageScore / 10).toFixed(1) : "–"}</div></div>`).join("") + `</div>`);
+      bindCards($("detail-recs"));
+    }
     pushRecent({ id, title, cover: m.coverImage.large, score: m.averageScore, year: m.seasonYear });
     renderLists();
     location.hash = "/anime/" + id;
