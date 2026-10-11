@@ -52,6 +52,22 @@ function bindCards(root) {
 
 const STUDIOS = ["MAPPA", "Ufotable", "Kyoto Animation", "Wit Studio", "Bones", "Madhouse", "A-1 Pictures", "Trigger"];
 
+// legal provider chips (external official sites only)
+const PROVIDERS = [
+  ["Crunchyroll", "https://www.crunchyroll.com"],
+  ["HIDIVE", "https://www.hidive.com"],
+  ["Netflix Anime", "https://www.netflix.com/browse/genre/7424"],
+  ["Hulu Anime", "https://www.hulu.com/genre/anime"],
+  ["Muse Asia", "https://www.youtube.com/@MuseAsia"],
+  ["Ani-One", "https://www.youtube.com/@AniOneAsia"],
+];
+const _load = load;
+load = async function () {
+  $("provider-chips").innerHTML = PROVIDERS.map(([n, u]) =>
+    `<a href="${u}" target="_blank" rel="noopener">${esc(n)} →</a>`).join("");
+  return _load();
+};
+
 async function load() {
   const [trend, cur, pop, top] = await Promise.all([
     gql(LIST, { page: 1, perPage: 10, sort: ["TRENDING_DESC"] }),
