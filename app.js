@@ -131,12 +131,50 @@ async function openDetail(id) {
     $("detail-desc").textContent = strip(m.description).slice(0, 700);
     $("detail-links").innerHTML = `<a href="${m.siteUrl}" target="_blank" rel="noopener">AniList →</a>` +
       (m.externalLinks || []).slice(0, 6).map((l) => `<a href="${l.url}" target="_blank" rel="noopener">${esc(l.site)} →</a>`).join("") +
-      (m.trailer?.site === "youtube" ? `<a href="https://www.youtube.com/watch?v=${m.trailer.id}" target="_blank" rel="noopener">Trailer →</a>` : "");
+      (m.trailer?.site === "youtube" ? `<a href="https://www.youtube.com/watch?v=${m.trailer.id}" target="_blank" rel="noopener">Trailer →</a>` : "") +
+      `<a href="#" id="mylist-toggle">${isListed(id) ? "✓ In My List" : "+ My List"}</a>`;
+    const tgl = $("mylist-toggle");
+    if (tgl) tgl.onclick = (e) => { e.preventDefault(); toggleList({ id, title, cover: m.coverImage.large, score: m.averageScore, year: m.seasonYear }); tgl.textContent = isListed(id) ? "✓ In My List" : "+ My List"; renderLists(); };
+    pushRecent({ id, title, cover: m.coverImage.large, score: m.averageScore, year: m.seasonYear });
+    renderLists();
     location.hash = "/anime/" + id;
   } catch (e) { $("detail-title").textContent = "Failed: " + e.message; }
 }
 function closeDetail() { $("detail").classList.add("hidden"); document.body.style.overflow = ""; history.replaceState(null, "", location.pathname); }
 $("detail-back").onclick = closeDetail;
+
+// My List + Recently Viewed (browser localStorage, Nuvio-style library)
+const store = {
+  get(k, fb) { try { return JSON.parse(localStorage.getItem(k)) ?? fb; } catch { return fb; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const isListed = (id) => store.get("ba_mylist", []).some((x) => x.id === id);
+function toggleList(item) {
+  let l = store.get("ba_mylist", []);
+  l = l.some((x) => x.id === item.id) ? l.filter((x) => x.id !== item.id) : [{ ...item, at: Date.now() }, ...l].slice(0, 24);
+  store.set("ba_mylist", l);
+}
+function pushRecent(item) {
+  let r = store.get("ba_recent", []).filter((x) => x.id !== item.id);
+  store.set("ba_recent", [{ ...item, at: Date.now() }, ...r].slice(0, 12));
+}
+const miniCard = (m) => `<div class="card" data-id="${m.id}"><img loading="lazy" src="${m.cover}" alt="" />` +
+  `<div class="t">${esc(m.title)}</div><div class="s">★ ${m.score ? (m.score / 10).toFixed(1) : "–"}${m.year ? " • " + m.year : ""}</div></div>`;
+function renderLists() {
+  const l = store.get("ba_mylist", []), r = store.get("ba_recent", []);
+  $("mylist-wrap").classList.toggle("hidden", !l.length);
+  $("recent-wrap").classList.toggle("hidden", !r.length);
+  $("row-mylist").innerHTML = l.map(miniCard).join("");
+  $("row-recent").innerHTML = r.map(miniCard).join("");
+  [$("row-mylist"), $("row-recent")].forEach(bindCards);
+}
+renderLists();
+const _showHero = showHero;
+showHero = function (i) {
+  _showHero(i);
+  const m = heroItems[heroIdx];
+  if (m) $("hero-more").onclick = () => openDetail(m.id);
+};
 
 // search
 let t;

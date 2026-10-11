@@ -35,14 +35,23 @@
     <div id="hero-tags" class="tags"></div>
     <p id="hero-desc"></p>
     <div class="hero-actions">
-      <button id="hero-info">▶ Start Watching</button>
-      <a id="hero-anilist" target="_blank" rel="noopener">More Info →</a>
+      <button id="hero-info">▶ Play</button>
+      <button id="hero-more" class="ghost">ⓘ More Info</button>
+      <a id="hero-anilist" target="_blank" rel="noopener">AniList →</a>
     </div>
   </div>
   <div class="hero-dots" id="hero-dots"></div>
 </section>
 
 <main>
+  <section class="row hidden" id="mylist-wrap">
+    <h2>My List</h2>
+    <div id="row-mylist" class="shelf"></div>
+  </section>
+  <section class="row hidden" id="recent-wrap">
+    <h2>Recently Viewed</h2>
+    <div id="row-recent" class="shelf"></div>
+  </section>
   <section class="row" id="schedule">
     <h2>Airing Soon — Simulcast Calendar</h2>
     <div id="row-schedule" class="shelf"></div>
