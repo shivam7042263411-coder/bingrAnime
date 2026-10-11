@@ -3,106 +3,110 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>BingrAnime — Stream-Style Anime Discovery</title>
-<meta name="description" content="Discover and explore anime: trending top 10, new season, popular and top-rated. Powered by AniList. Legal links only." />
-<meta name="theme-color" content="#0f1014" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f1014'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%23e50914' font-family='Arial Black'%3EB%3C/text%3E%3C/svg%3E" />
+<title>BingrAnime — Explore Anime</title>
+<meta name="description" content="Explore trending, popular and top-rated anime with trailers and schedules. Catalog by AniList. Legal links only." />
+<meta name="theme-color" content="#080c16" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2360a5fa'/%3E%3Cstop offset='.5' stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%23fb7185'/%3E%3C/linearGradient%3E%3C/svg%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ctext x='16' y='23' font-size='17' text-anchor='middle' fill='white' font-family='Arial Black'%3EB%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="preconnect" href="https://graphql.anilist.co" crossorigin />
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">Bingr<span>Anime</span></div>
-  <nav class="nav"><a href="#top" class="active">Browse</a><a href="#schedule">Simulcasts</a><a href="#trending">Popular</a><a href="#studios">Studios</a></nav>
-  <div class="searchwrap">
-    <input id="search" type="search" placeholder="Search anime…" autocomplete="off" />
-    <div id="results" class="dropdown hidden"></div>
+<div class="app-bg"></div>
+
+<header class="header" id="header">
+  <div class="header-inner">
+    <a href="#top" class="brand">BingrAnime</a>
+    <nav class="nav">
+      <a href="#explore" data-nav>Explore</a>
+      <a href="#trending" data-nav>Trending</a>
+      <a href="#schedule" data-nav>Schedule</a>
+      <a href="#mylist-wrap" data-nav>My List</a>
+    </nav>
+    <div class="searchbox">
+      <span class="search-ico">⌕</span>
+      <input id="search" type="search" placeholder="Search anime…" autocomplete="off" />
+      <div id="results" class="dropdown hidden"></div>
+    </div>
+    <button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>
+  </div>
+  <div class="mobile-sheet hidden" id="mobile-sheet">
+    <a href="#explore">Explore</a><a href="#trending">Trending</a>
+    <a href="#schedule">Schedule</a><a href="#mylist-wrap">My List</a>
   </div>
 </header>
 
-<section id="top" class="hero" aria-label="Spotlight">
-  <div class="hero-bg" id="hero-bg"></div>
-  <div class="hero-trailer hidden" id="hero-trailer"></div>
-  <div class="hero-fade"></div>
-  <button class="hero-arrow left" id="hero-prev" aria-label="Previous">‹</button>
-  <button class="hero-arrow right" id="hero-next" aria-label="Next">›</button>
-  <div class="hero-body">
-    <div class="kicker" id="hero-kicker">#1 Spotlight</div>
-    <h1 id="hero-title">Loading…</h1>
-    <div id="hero-meta" class="meta"></div>
-    <div id="hero-tags" class="tags"></div>
-    <p id="hero-desc"></p>
-    <div class="hero-actions">
-      <button id="hero-info">▶ Play</button>
-      <button id="hero-more" class="ghost">ⓘ More Info</button>
-      <a id="hero-anilist" target="_blank" rel="noopener">AniList →</a>
+<section class="hero-text" id="top">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <h1><span class="grad">Watch Trailers. Explore Anime.</span></h1>
+  <p>Fast, clean anime discovery powered by AniList — no pirated streams, just metadata, trailers and legal links.</p>
+  <div class="hero-cta">
+    <a href="#explore" class="btn-primary">Start Exploring</a>
+    <a href="#trending" class="btn-ghost">See Trending</a>
+  </div>
+</section>
+
+<section class="spotlight" id="explore">
+  <div class="spot-bg" id="spot-bg"></div>
+  <div class="spot-fade"></div>
+  <button class="spot-arrow left" id="spot-prev" aria-label="Previous">‹</button>
+  <button class="spot-arrow right" id="spot-next" aria-label="Next">›</button>
+  <div class="spot-body">
+    <div class="kicker" id="spot-kicker">#1 Spotlight</div>
+    <h2 id="spot-title">Loading…</h2>
+    <div id="spot-meta" class="meta"></div>
+    <div id="spot-tags" class="tags"></div>
+    <p id="spot-desc"></p>
+    <div class="spot-actions">
+      <button id="spot-trailer-btn" class="btn-primary">▶ Trailer</button>
+      <button id="spot-info" class="btn-ghost">More Info</button>
     </div>
   </div>
-  <div class="hero-dots" id="hero-dots"></div>
+  <div class="spot-dots" id="spot-dots"></div>
 </section>
 
 <main>
-  <section class="row" id="providers">
-    <h2>Browse by Source</h2>
-    <div class="chips" id="provider-chips"></div>
-  </section>
-  <section class="row hidden" id="mylist-wrap">
-    <h2>My List</h2>
-    <div id="row-mylist" class="shelf"></div>
-  </section>
-  <section class="row hidden" id="recent-wrap">
-    <h2>Recently Viewed</h2>
-    <div id="row-recent" class="shelf"></div>
-  </section>
-  <section class="row" id="schedule">
-    <h2>Airing Soon — Simulcast Calendar</h2>
-    <div id="row-schedule" class="shelf"></div>
-  </section>
-  <section class="row" id="trending">
-    <h2><span class="bignum-title">Trending Right Now</span></h2>
-    <div id="row-trending" class="top10"></div>
-  </section>
-  <section class="row" id="new">
-    <h2>New This Season</h2>
-    <div id="row-new" class="shelf"></div>
-  </section>
-  <section class="row">
-    <h2>Popular Anime</h2>
-    <div id="row-popular" class="shelf"></div>
-  </section>
-  <section class="row">
-    <h2>Top Rated All Time</h2>
-    <div id="row-top" class="shelf"></div>
-  </section>
-  <section class="row" id="studios">
-    <h2>Studios</h2>
-    <div class="studio-grid" id="studio-grid"></div>
-  </section>
-  <div id="studio-results-wrap" class="hidden">
-    <h2 id="studio-title"></h2>
-    <div id="studio-results" class="shelf"></div>
-  </div>
-  <p class="note">Catalog by <a href="https://anilist.co" target="_blank" rel="noopener">AniList</a> • Artwork &amp; synopses belong to their owners • Legal watch links only. No hosted video.</p>
+  <section class="row hidden" id="mylist-wrap"><h3>My List</h3><div id="row-mylist" class="rail"></div></section>
+  <section class="row" id="trending"><h3>Trending Now</h3><div id="row-trending" class="rail"></div></section>
+  <section class="row" id="schedule"><h3>Airing Schedule</h3><div id="row-schedule" class="rail landscape"></div></section>
+  <section class="row"><h3>Popular</h3><div id="row-popular" class="rail"></div></section>
+  <section class="row"><h3>Top Rated</h3><div id="row-top" class="rail"></div></section>
+  <section class="row"><h3>Browse by Source</h3><div class="chips" id="provider-chips"></div></section>
 </main>
 
 <div id="detail" class="detail hidden">
   <div class="detail-bg" id="detail-bg"></div>
   <div class="detail-fade"></div>
   <button id="detail-back">‹ Back</button>
-  <div class="detail-body">
-    <img id="detail-poster" alt="" />
-    <div>
-      <h2 id="detail-title"></h2>
-      <div id="detail-meta" class="meta"></div>
-      <div id="detail-tags" class="tags"></div>
-      <p id="detail-desc"></p>
-      <div class="links" id="detail-links"></div>
+  <div class="detail-wrap">
+    <div class="glass hero-card">
+      <img id="detail-poster" alt="" />
+      <div>
+        <h2 id="detail-title"></h2>
+        <div id="detail-meta" class="meta"></div>
+        <div id="detail-tags" class="tags"></div>
+        <p id="detail-desc"></p>
+        <div class="links" id="detail-links"></div>
+      </div>
+    </div>
+    <div class="glass hidden" id="trailer-card">
+      <h3>Trailer</h3>
+      <div class="video" id="detail-trailer"></div>
+    </div>
+    <div class="glass hidden" id="recs-card">
+      <h3>More Like This</h3>
+      <div id="detail-recs" class="rail"></div>
     </div>
   </div>
 </div>
+
+<footer>
+  <p>BingrAnime — catalog by <a href="https://anilist.co" target="_blank" rel="noopener">AniList</a> ·
+  UI reimagined from <a href="https://github.com/Pid24/anime-hub" target="_blank" rel="noopener">Pid24/anime-hub</a> (MIT) ·
+  Legal links only, no hosted video.</p>
+</footer>
 
 <script src="app.js"></script>
 </body>

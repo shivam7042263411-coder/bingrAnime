@@ -1,6 +1,8 @@
-# BingrAnime — free anime discovery site
+# BingrAnime — fresh UI reimagined from Pid24/anime-hub (MIT) patterns
 
-Catalog: **AniList** GraphQL (no key needed). Legal watch links only — no hosted/scraped video.
+Own static implementation (no build step). Catalog: **AniList** GraphQL, no key.
+Legal links only — no watch-player / scraper code (anime-hub's consumet watch
+routes were deliberately NOT ported).
 
 ## Run locally
 ```bash
@@ -8,17 +10,9 @@ python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-## Deploy free (Cloudflare Pages)
-1. Push this repo to GitHub (already done)
-2. dash.cloudflare.com → Workers & Pages → Create → Pages → Connect to Git → pick `bingrAnime`
-3. Build settings:
-   - Framework preset: **None**
-   - Build command: *(empty)*
-   - Build output directory: `/`
-4. Deploy → live at `https://bingranime.pages.dev`
-5. Custom domain later: Pages → Custom domains → add `bingranime.one` (buy on Porkbun ~$12/yr, point NS to Cloudflare)
+## Deploy (Cloudflare Worker / Pages, free)
+- Static files: `index.html`, `styles.css`, `app.js` — no build command.
+- Push to `main` → redeploy worker → hard-refresh.
 
-## Files
-- `index.html` — shell + hero + rows + modal
-- `styles.css` — dark theme
-- `app.js` — AniList queries: trending / popular / top / search / detail
+## Credit
+Layout/card/header patterns reimagined from https://github.com/Pid24/anime-hub (MIT).
