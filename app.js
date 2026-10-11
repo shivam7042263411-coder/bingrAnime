@@ -73,6 +73,22 @@ async function load() {
   $("row-popular").innerHTML = pop.Page.media.map(shelfCard).join("");
   $("row-top").innerHTML = top.Page.media.map(shelfCard).join("");
   ["row-trending", "row-new", "row-popular", "row-top"].forEach((id) => bindCards($(id)));
+  // simulcast calendar (AiringSchedule) — Crunchyroll-style
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const sq = `query { Page(page:1, perPage:12){ airingSchedules(notYetAired:true, sort:[TIME]) {
+      airingAt episode media{ id title{romaji english} coverImage{large} siteUrl } } } }`;
+    const sd = await gql(sq);
+    $("row-schedule").innerHTML = sd.Page.airingSchedules.map((a) => {
+      const m = a.media;
+      const dt = new Date(a.airingAt * 1000);
+      const when = dt.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+      return `<div class="card" data-id="${m.id}"><img loading="lazy" src="${m.coverImage.large}" alt="" />` +
+        `<div class="t">${esc(m.title.english || m.title.romaji)}</div>` +
+        `<div class="s">EP ${a.episode} • ${esc(when)}</div></div>`;
+    }).join("");
+    bindCards($("row-schedule"));
+  } catch (e) { $("row-schedule").textContent = "Schedule unavailable"; }
   // studios
   $("studio-grid").innerHTML = STUDIOS.map((s) => `<div class="studio" data-s="${esc(s)}">${esc(s)}<small>tap to explore →</small></div>`).join("");
   document.querySelectorAll(".studio").forEach((el) =>

@@ -16,7 +16,7 @@
 <body>
 <header class="topbar">
   <div class="brand">Bingr<span>Anime</span></div>
-  <nav class="nav"><a href="#top" class="active">Home</a><a href="#trending">Trending</a><a href="#new">New Season</a><a href="#studios">Studios</a></nav>
+  <nav class="nav"><a href="#top" class="active">Browse</a><a href="#schedule">Simulcasts</a><a href="#trending">Popular</a><a href="#studios">Studios</a></nav>
   <div class="searchwrap">
     <input id="search" type="search" placeholder="Search anime…" autocomplete="off" />
     <div id="results" class="dropdown hidden"></div>
@@ -43,6 +43,10 @@
 </section>
 
 <main>
+  <section class="row" id="schedule">
+    <h2>Airing Soon — Simulcast Calendar</h2>
+    <div id="row-schedule" class="shelf"></div>
+  </section>
   <section class="row" id="trending">
     <h2><span class="bignum-title">Trending Right Now</span></h2>
     <div id="row-trending" class="top10"></div>

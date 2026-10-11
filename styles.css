@@ -1,4 +1,4 @@
-:root{--bg:#0f1014;--card:#17181d;--txt:#f2f2f2;--mut:#a7aab3;--red:#e50914}
+:root{--bg:#000000;--card:#141519;--txt:#f2f2f2;--mut:#a7aab3;--red:#f47521;--red-d:#d65f13}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.5 Inter,-apple-system,Segoe UI,Roboto,Arial}
 h1,h2{font-family:"Bebas Neue",Inter,sans-serif;letter-spacing:.5px;font-weight:400}
 .topbar{position:sticky;top:0;z-index:30;display:flex;gap:18px;align-items:center;padding:12px 22px;background:rgba(15,16,20,.92);backdrop-filter:blur(12px);border-bottom:1px solid #222}
@@ -30,7 +30,7 @@ h1,h2{font-family:"Bebas Neue",Inter,sans-serif;letter-spacing:.5px;font-weight:
 .hero-dots{position:absolute;bottom:14px;right:4vw;display:flex;gap:6px;z-index:3}
 .hero-dots i{width:22px;height:4px;border-radius:2px;background:#ffffff33;cursor:pointer}.hero-dots i.on{background:var(--red)}
 main{padding:6px 4vw 70px;max-width:1400px;margin:0 auto}
-.row h2{margin:30px 0 12px;font-size:30px}
+.row h2{margin:30px 0 12px;font-size:30px;border-left:4px solid var(--red);padding-left:12px}
 /* top 10 numbered like bingr */
 .top10{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
 .top10 .t10{display:flex;align-items:flex-end;min-width:200px;cursor:pointer}
