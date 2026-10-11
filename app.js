@@ -1,106 +1,139 @@
 const API = "https://graphql.anilist.co";
 const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s || "").replace(/</g, "&lt;");
+const strip = (s) => String(s || "").replace(/<[^>]+>/g, "");
 
 async function gql(query, variables = {}) {
-  const r = await fetch(API, {
-    method: "POST",
+  const r = await fetch(API, { method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ query, variables }),
-  });
+    body: JSON.stringify({ query, variables }) });
   if (!r.ok) throw new Error("AniList " + r.status);
   const j = await r.json();
   if (j.errors) throw new Error(j.errors[0].message);
   return j.data;
 }
 
-const LIST = `
-query ($page:Int,$perPage:Int,$sort:[MediaSort]) {
+const LIST = `query ($page:Int,$perPage:Int,$sort:[MediaSort]) {
   Page(page:$page, perPage:$perPage) {
     media(type:ANIME, sort:$sort, isAdult:false) {
       id title{romaji english} coverImage{large} bannerImage
-      averageScore seasonYear episodes format status
-      genres description(asHtml:false) siteUrl
+      averageScore seasonYear episodes format genres description(asHtml:false) siteUrl
     }
   }
 }`;
 
-const card = (m) => `
-  <div class="card" data-id="${m.id}">
-    <img loading="lazy" src="${m.coverImage.large}" alt="" />
-    <div class="t">${(m.title.english || m.title.romaji || "").replace(/</g, "&lt;")}</div>
-    <div class="s">★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"} ${m.seasonYear ? "• " + m.seasonYear : ""}</div>
-  </div>`;
+let heroItems = [], heroIdx = 0, heroTimer;
+
+function showHero(i) {
+  heroIdx = (i + heroItems.length) % heroItems.length;
+  const m = heroItems[heroIdx];
+  const title = m.title.english || m.title.romaji;
+  $("hero-bg").style.backgroundImage = `url('${m.bannerImage || m.coverImage.large}')`;
+  $("hero-kicker").textContent = `#${heroIdx + 1} Spotlight • ★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}`;
+  $("hero-title").textContent = title;
+  $("hero-meta").innerHTML = `<span class="score">★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}</span><span><b>${m.seasonYear || ""}</b></span><span>${m.episodes ? m.episodes + " EP" : ""}</span><span>${esc(m.format || "")}</span>`;
+  $("hero-tags").innerHTML = (m.genres || []).slice(0, 4).map((g) => `<span>${esc(g)}</span>`).join("");
+  $("hero-desc").textContent = strip(m.description).slice(0, 240) + "…";
+  $("hero-anilist").href = m.siteUrl;
+  $("hero-info").onclick = () => openDetail(m.id);
+  document.querySelectorAll(".hero-dots i").forEach((d, k) => d.classList.toggle("on", k === heroIdx));
+}
+function heroAuto() { clearInterval(heroTimer); heroTimer = setInterval(() => showHero(heroIdx + 1), 6000); }
+
+const shelfCard = (m) => `<div class="card" data-id="${m.id}">
+  <img loading="lazy" src="${m.coverImage.large}" alt="" />
+  <div class="t">${esc(m.title.english || m.title.romaji)}</div>
+  <div class="s">★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}${m.seasonYear ? " • " + m.seasonYear : ""}</div></div>`;
 
 function bindCards(root) {
-  root.querySelectorAll(".card").forEach((c) =>
-    c.addEventListener("click", () => openDetail(+c.dataset.id))
-  );
+  root.querySelectorAll("[data-id]").forEach((c) =>
+    c.addEventListener("click", () => openDetail(+c.dataset.id)));
 }
 
-async function loadRows() {
-  const [tr, pop, top] = await Promise.all([
-    gql(LIST, { page: 1, perPage: 12, sort: ["TRENDING_DESC"] }),
+const STUDIOS = ["MAPPA", "Ufotable", "Kyoto Animation", "Wit Studio", "Bones", "Madhouse", "A-1 Pictures", "Trigger"];
+
+async function load() {
+  const [trend, cur, pop, top] = await Promise.all([
+    gql(LIST, { page: 1, perPage: 10, sort: ["TRENDING_DESC"] }),
     gql(LIST, { page: 1, perPage: 12, sort: ["POPULARITY_DESC"] }),
+    gql(LIST, { page: 2, perPage: 12, sort: ["POPULARITY_DESC"] }),
     gql(LIST, { page: 1, perPage: 12, sort: ["SCORE_DESC"] }),
   ]);
-  $("row-trending").innerHTML = tr.Page.media.map(card).join("");
-  $("row-popular").innerHTML = pop.Page.media.map(card).join("");
-  $("row-top").innerHTML = top.Page.media.map(card).join("");
-  [$("row-trending"), $("row-popular"), $("row-top")].forEach(bindCards);
+  // hero carousel
+  heroItems = trend.Page.media.filter((m) => m.bannerImage).concat(trend.Page.media).slice(0, 7);
+  $("hero-dots").innerHTML = heroItems.map(() => "<i></i>").join("");
+  document.querySelectorAll(".hero-dots i").forEach((d, k) => d.onclick = () => { showHero(k); heroAuto(); });
+  showHero(0); heroAuto();
+  $("hero-prev").onclick = () => { showHero(heroIdx - 1); heroAuto(); };
+  $("hero-next").onclick = () => { showHero(heroIdx + 1); heroAuto(); };
+  // top 10 numbered
+  $("row-trending").innerHTML = trend.Page.media.map((m, i) =>
+    `<div class="t10" data-id="${m.id}"><div class="num">${i + 1}</div><img loading="lazy" src="${m.coverImage.large}" title="${esc(m.title.english || m.title.romaji)}" /></div>`).join("");
+  $("row-new").innerHTML = cur.Page.media.map(shelfCard).join("");
+  $("row-popular").innerHTML = pop.Page.media.map(shelfCard).join("");
+  $("row-top").innerHTML = top.Page.media.map(shelfCard).join("");
+  ["row-trending", "row-new", "row-popular", "row-top"].forEach((id) => bindCards($(id)));
+  // studios
+  $("studio-grid").innerHTML = STUDIOS.map((s) => `<div class="studio" data-s="${esc(s)}">${esc(s)}<small>tap to explore →</small></div>`).join("");
+  document.querySelectorAll(".studio").forEach((el) =>
+    el.addEventListener("click", () => studioSearch(el.dataset.s)));
+}
 
-  const h = tr.Page.media.find((m) => m.bannerImage) || tr.Page.media[0];
-  document.querySelector(".hero-bg").style.backgroundImage = `url('${h.bannerImage || h.coverImage.large}')`;
-  $("hero-title").textContent = h.title.english || h.title.romaji;
-  $("hero-meta").innerHTML = `<span>★ ${h.averageScore ? (h.averageScore / 10).toFixed(1) : "–"}</span><span>${h.seasonYear || ""}</span><span>${(h.genres || []).slice(0, 3).join(" • ")}</span>`;
-  $("hero-desc").textContent = (h.description || "").replace(/<[^>]+>/g, "").slice(0, 220) + "…";
-  $("hero-anilist").href = h.siteUrl;
-  $("hero-info").onclick = () => openDetail(h.id);
+async function studioSearch(name) {
+  $("studio-results-wrap").classList.remove("hidden");
+  $("studio-title").textContent = name;
+  $("studio-results").innerHTML = "Loading…";
+  const q = `query ($s:String){ Page(page:1, perPage:12){ media(search:$s, type:ANIME, isAdult:false){
+    id title{romaji english} coverImage{large} averageScore seasonYear siteUrl } } }`;
+  try {
+    const d = await gql(q, { s: name });
+    $("studio-results").innerHTML = d.Page.media.map(shelfCard).join("");
+    bindCards($("studio-results"));
+    document.getElementById("studio-results-wrap").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { $("studio-results").textContent = "Failed: " + e.message; }
 }
 
 async function openDetail(id) {
-  $("modal").classList.remove("hidden");
-  $("modal-body").textContent = "Loading…";
+  const d = $("detail");
+  d.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  $("detail-title").textContent = "Loading…";
   const q = `query ($id:Int){ Media(id:$id, type:ANIME){
-    title{romaji english} coverImage{large} bannerImage averageScore
-    seasonYear episodes format status genres description(asHtml:false)
-    siteUrl trailer{id site thumbnail} externalLinks{site url} studios{nodes{name}} } }`;
+    title{romaji english} coverImage{large} bannerImage averageScore seasonYear
+    episodes format status genres description(asHtml:false) siteUrl
+    trailer{id site} externalLinks{site url} studios{nodes{name}} } }`;
   try {
-    const d = await gql(q, { id });
-    const m = d.Media;
+    const r = await gql(q, { id });
+    const m = r.Media;
     const title = m.title.english || m.title.romaji;
-    const desc = (m.description || "").replace(/<[^>]+>/g, "").slice(0, 600);
-    $("modal-body").innerHTML = `
-      ${m.bannerImage ? `<img class="mbanner" src="${m.bannerImage}" />` : ""}
-      <div class="mbody">
-        <h2>${title.replace(/</g, "&lt;")}</h2>
-        <div class="meta"><span>★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}</span><span>${m.seasonYear || ""}</span><span>${m.episodes ? m.episodes + " eps" : ""}</span><span>${m.format || ""}</span></div>
-        <p>${desc.replace(/</g, "&lt;")}…</p>
-        <div class="meta"><span>${(m.genres || []).join(" • ")}</span></div>
-        <div class="links">
-          <a href="${m.siteUrl}" target="_blank" rel="noopener">AniList page →</a>
-          ${(m.externalLinks || []).slice(0, 6).map((l) => `<a href="${l.url}" target="_blank" rel="noopener">${String(l.site).replace(/</g, "")} →</a>`).join("")}
-          ${m.trailer && m.trailer.site === "youtube" ? `<a href="https://www.youtube.com/watch?v=${m.trailer.id}" target="_blank" rel="noopener">Trailer →</a>` : ""}
-        </div>
-      </div>`;
-  } catch (e) {
-    $("modal-body").textContent = "Failed: " + e.message;
-  }
+    $("detail-bg").style.backgroundImage = `url('${m.bannerImage || m.coverImage.large}')`;
+    $("detail-poster").src = m.coverImage.large;
+    $("detail-title").textContent = title;
+    $("detail-meta").innerHTML = `<span class="score">★ ${m.averageScore ? (m.averageScore / 10).toFixed(1) : "–"}</span><span><b>${m.seasonYear || ""}</b></span><span>${m.episodes ? m.episodes + " EP" : ""}</span><span>${esc(m.format || "")}</span><span>${esc(m.status || "")}</span>`;
+    $("detail-tags").innerHTML = (m.genres || []).map((g) => `<span>${esc(g)}</span>`).join("") +
+      (m.studios?.nodes || []).slice(0, 2).map((s) => `<span>${esc(s.name)}</span>`).join("");
+    $("detail-desc").textContent = strip(m.description).slice(0, 700);
+    $("detail-links").innerHTML = `<a href="${m.siteUrl}" target="_blank" rel="noopener">AniList →</a>` +
+      (m.externalLinks || []).slice(0, 6).map((l) => `<a href="${l.url}" target="_blank" rel="noopener">${esc(l.site)} →</a>`).join("") +
+      (m.trailer?.site === "youtube" ? `<a href="https://www.youtube.com/watch?v=${m.trailer.id}" target="_blank" rel="noopener">Trailer →</a>` : "");
+    location.hash = "/anime/" + id;
+  } catch (e) { $("detail-title").textContent = "Failed: " + e.message; }
 }
-$("close").onclick = () => $("modal").classList.add("hidden");
-$("modal").addEventListener("click", (e) => { if (e.target.id === "modal") $("modal").classList.add("hidden"); });
+function closeDetail() { $("detail").classList.add("hidden"); document.body.style.overflow = ""; history.replaceState(null, "", location.pathname); }
+$("detail-back").onclick = closeDetail;
 
+// search
 let t;
 $("search").addEventListener("input", (e) => {
   clearTimeout(t);
   const q = e.target.value.trim();
   if (!q) { $("results").classList.add("hidden"); return; }
   t = setTimeout(async () => {
-    const query = `query ($s:String){ Page(page:1, perPage:8){ media(search:$s, type:ANIME, isAdult:false){ id title{romaji english} coverImage{large} seasonYear averageScore } } }`;
+    const query = `query ($s:String){ Page(page:1, perPage:8){ media(search:$s, type:ANIME, isAdult:false){ id title{romaji english} coverImage{large} seasonYear } } }`;
     try {
       const d = await gql(query, { s: q });
       $("results").innerHTML = d.Page.media.map((m) =>
-        `<div class="hit" data-id="${m.id}"><img src="${m.coverImage.large}" /><div><div>${(m.title.english || m.title.romaji || "").replace(/</g, "&lt;")}</div><div style="color:#888;font-size:12px">${m.seasonYear || ""}</div></div></div>`
-      ).join("") || "<div class='hit'>No results</div>";
+        `<div class="hit" data-id="${m.id}"><img src="${m.coverImage.large}" /><div><div>${esc(m.title.english || m.title.romaji)}</div><div style="color:#888;font-size:12px">${m.seasonYear || ""}</div></div></div>`).join("") || "No results";
       $("results").classList.remove("hidden");
       $("results").querySelectorAll(".hit[data-id]").forEach((h) =>
         h.addEventListener("click", () => { $("results").classList.add("hidden"); openDetail(+h.dataset.id); }));
@@ -108,4 +141,10 @@ $("search").addEventListener("input", (e) => {
   }, 350);
 });
 
-loadRows().catch((e) => { $("hero-title").textContent = "Failed to load AniList: " + e.message; });
+// deep link #/anime/123
+if (location.hash.startsWith("#/anime/")) {
+  const id = +location.hash.split("/")[2];
+  if (id) load().then(() => openDetail(id));
+} else {
+  load().catch((e) => { $("hero-title").textContent = "Failed: " + e.message; });
+}

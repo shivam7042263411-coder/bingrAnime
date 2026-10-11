@@ -3,48 +3,86 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>BingrAnime — Discover Anime</title>
-<meta name="description" content="Discover trending, popular and top-rated anime. Powered by AniList. Legal watch links only." />
+<title>BingrAnime — Stream-Style Anime Discovery</title>
+<meta name="description" content="Discover and explore anime: trending top 10, new season, popular and top-rated. Powered by AniList. Legal links only." />
 <meta name="theme-color" content="#0f1014" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f1014'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='%23e50914' font-family='Arial Black'%3EB%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 <link rel="preconnect" href="https://graphql.anilist.co" crossorigin />
 </head>
 <body>
 <header class="topbar">
   <div class="brand">Bingr<span>Anime</span></div>
+  <nav class="nav"><a href="#top" class="active">Home</a><a href="#trending">Trending</a><a href="#new">New Season</a><a href="#studios">Studios</a></nav>
   <div class="searchwrap">
-    <input id="search" type="search" placeholder="Search anime… (e.g. Frieren, One Piece)" autocomplete="off" />
+    <input id="search" type="search" placeholder="Search anime…" autocomplete="off" />
     <div id="results" class="dropdown hidden"></div>
   </div>
-  <a class="pill" href="https://anilist.co" target="_blank" rel="noopener">AniList</a>
 </header>
 
-<section id="hero" class="hero">
-  <div class="hero-bg"></div>
+<section id="top" class="hero" aria-label="Spotlight">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-fade"></div>
+  <button class="hero-arrow left" id="hero-prev" aria-label="Previous">‹</button>
+  <button class="hero-arrow right" id="hero-next" aria-label="Next">›</button>
   <div class="hero-body">
-    <div class="kicker">✨ Spotlight</div>
+    <div class="kicker" id="hero-kicker">#1 Spotlight</div>
     <h1 id="hero-title">Loading…</h1>
     <div id="hero-meta" class="meta"></div>
+    <div id="hero-tags" class="tags"></div>
     <p id="hero-desc"></p>
     <div class="hero-actions">
-      <button id="hero-info">More info</button>
-      <a id="hero-anilist" target="_blank" rel="noopener">View on AniList →</a>
+      <button id="hero-info">ⓘ More Info</button>
+      <a id="hero-anilist" target="_blank" rel="noopener">AniList →</a>
     </div>
   </div>
+  <div class="hero-dots" id="hero-dots"></div>
 </section>
 
 <main>
-  <section class="row"><h2>Trending Now</h2><div id="row-trending" class="cards"></div></section>
-  <section class="row"><h2>Popular This Season</h2><div id="row-popular" class="cards"></div></section>
-  <section class="row"><h2>Top Rated All Time</h2><div id="row-top" class="cards"></div></section>
-  <p class="note">Catalog by <a href="https://anilist.co" target="_blank" rel="noopener">AniList</a> • Covers &amp; synopses belong to their owners • This demo links to legal sources only (AniList / official external links). No hosted video.</p>
+  <section class="row" id="trending">
+    <h2><span class="bignum-title">Trending Right Now</span></h2>
+    <div id="row-trending" class="top10"></div>
+  </section>
+  <section class="row" id="new">
+    <h2>New This Season</h2>
+    <div id="row-new" class="shelf"></div>
+  </section>
+  <section class="row">
+    <h2>Popular Anime</h2>
+    <div id="row-popular" class="shelf"></div>
+  </section>
+  <section class="row">
+    <h2>Top Rated All Time</h2>
+    <div id="row-top" class="shelf"></div>
+  </section>
+  <section class="row" id="studios">
+    <h2>Studios</h2>
+    <div class="studio-grid" id="studio-grid"></div>
+  </section>
+  <div id="studio-results-wrap" class="hidden">
+    <h2 id="studio-title"></h2>
+    <div id="studio-results" class="shelf"></div>
+  </div>
+  <p class="note">Catalog by <a href="https://anilist.co" target="_blank" rel="noopener">AniList</a> • Artwork &amp; synopses belong to their owners • Legal watch links only. No hosted video.</p>
 </main>
 
-<div id="modal" class="modal hidden">
-  <div class="sheet">
-    <button id="close" aria-label="Close">✕</button>
-    <div id="modal-body">Loading…</div>
+<div id="detail" class="detail hidden">
+  <div class="detail-bg" id="detail-bg"></div>
+  <div class="detail-fade"></div>
+  <button id="detail-back">‹ Back</button>
+  <div class="detail-body">
+    <img id="detail-poster" alt="" />
+    <div>
+      <h2 id="detail-title"></h2>
+      <div id="detail-meta" class="meta"></div>
+      <div id="detail-tags" class="tags"></div>
+      <p id="detail-desc"></p>
+      <div class="links" id="detail-links"></div>
+    </div>
   </div>
 </div>
 
